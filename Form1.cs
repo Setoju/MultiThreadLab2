@@ -22,42 +22,49 @@ namespace MultiThreadLab2
 
         private void pictureBox1_MouseClick(object sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Left)
+            using (Graphics g = Graphics.FromImage(voronoiBitmap))
             {
-                vertices.Add(e.Location);
-                regionColors.Add(Color.FromArgb(rand.Next(256), rand.Next(256), rand.Next(256)));
-            }
-            else if (e.Button == MouseButtons.Right)
-            {
-                int index = vertices.FindIndex(p => Math.Abs(p.X - e.X) < 5 && Math.Abs(p.Y - e.Y) < 5);
-                if (index != -1)
+                if (e.Button == MouseButtons.Left)
                 {
-                    vertices.RemoveAt(index);
-                    regionColors.RemoveAt(index);
+                    int index = vertices.FindIndex(p => Math.Abs(p.X - e.X) < 5 && Math.Abs(p.Y - e.Y) < 5);
+                    if (index == -1)
+                    {
+                        vertices.Add(e.Location);
+                        regionColors.Add(Color.FromArgb(rand.Next(256), rand.Next(256), rand.Next(256)));
+                        g.Clear(Color.White);
+                    }
+                    else
+                    {
+                        if (index != -1)
+                        {
+                            vertices.RemoveAt(index);
+                            regionColors.RemoveAt(index);
+                            g.Clear(Color.White);
+                        }
+                    }
                 }
+                DrawVertices();
             }
-            DrawVertices();            
         }
 
         private void DrawVertices()
         {
             using (Graphics g = Graphics.FromImage(voronoiBitmap))
             {
-                g.Clear(Color.White);
                 foreach (var vertex in vertices)
                 {
-                    g.FillEllipse(Brushes.Red, vertex.X - 3, vertex.Y - 3, 10, 10);
+                    g.FillEllipse(Brushes.Black, vertex.X - 3, vertex.Y - 3, 8, 8);
                 }
             }
             pictureBox1.Image = voronoiBitmap;
-        }        
+        }
 
         private void CalculateVoronoiDiagram()
         {
-            if (parallelMode)
+            using (Graphics g = Graphics.FromImage(voronoiBitmap))
             {
-                using (Graphics g = Graphics.FromImage(voronoiBitmap))
-                {                    
+                if (parallelMode)
+                {
                     int segmentWidth = voronoiBitmap.Width / Environment.ProcessorCount;
                     int segmentHeight = voronoiBitmap.Height;
 
@@ -78,35 +85,29 @@ namespace MultiThreadLab2
                                     int index = vertices.IndexOf(nearestVertex);
                                     lock (g)
                                     {
-                                        if (index != -1 && pixel != nearestVertex)
-                                        {
-                                            g.FillRectangle(new SolidBrush(regionColors[index]), pixel.X, pixel.Y, 1, 1);
-                                        }                                        
+                                        g.FillRectangle(new SolidBrush(regionColors[index]), pixel.X, pixel.Y, 1, 1);
                                     }
                                 }
-                            }                            
+                            }
+                            
                         }));
                     }
-                    Task.WaitAll(tasks.ToArray());                    
+                    Task.WaitAll(tasks.ToArray());
+                    DrawVertices();
                 }
-
-                pictureBox1.Image = voronoiBitmap;
-            }
-            else
-            {
-                using (Graphics g = Graphics.FromImage(voronoiBitmap))
-                {                    
+                else
+                {
                     foreach (Point pixel in GetPixels(voronoiBitmap.Width, voronoiBitmap.Height))
                     {
                         Point nearestVertex = FindNearestVertex(pixel, vertices);
                         int index = vertices.IndexOf(nearestVertex);
-                        if (index != -1 && pixel != nearestVertex) // Додати умову, щоб не фарбувати вершини
+                        if (index != -1)
                         {
                             g.FillRectangle(new SolidBrush(regionColors[index]), pixel.X, pixel.Y, 1, 1);
                         }
-                    }                    
+                    }
+                    DrawVertices();
                 }
-                pictureBox1.Image = voronoiBitmap;
             }
         }
 
@@ -145,20 +146,18 @@ namespace MultiThreadLab2
         }
 
         private void btnGenerateRandom_Click(object sender, EventArgs e)
-        {                        
+        {
             vertices.Clear();
             regionColors.Clear();
-           
-            DrawVertices();            
-            
-            for (int i = 0; i < 10; i++)
+
+            for (int i = 0; i < 500; i++)
             {
                 int x = rand.Next(pictureBox1.Width);
                 int y = rand.Next(pictureBox1.Height);
                 vertices.Add(new Point(x, y));
                 regionColors.Add(Color.FromArgb(rand.Next(256), rand.Next(256), rand.Next(256)));
             }
-            
+
             DrawVertices();
             CalculateVoronoiDiagram();
         }
@@ -171,6 +170,17 @@ namespace MultiThreadLab2
         private void Calculate_Click(object sender, EventArgs e)
         {
             CalculateVoronoiDiagram();
+        }
+
+        private void ClearButton_Click(object sender, EventArgs e)
+        {
+            using (Graphics g = Graphics.FromImage(voronoiBitmap))
+            {
+                vertices.Clear();
+                regionColors.Clear();
+                g.Clear(Color.White);
+                DrawVertices();
+            }                
         }
     }
 }

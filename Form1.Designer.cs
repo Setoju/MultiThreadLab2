@@ -32,6 +32,7 @@
             button1 = new Button();
             checkBox1 = new CheckBox();
             button2 = new Button();
+            button3 = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
@@ -75,11 +76,22 @@
             button2.UseVisualStyleBackColor = true;
             button2.Click += Calculate_Click;
             // 
+            // button3
+            // 
+            button3.Location = new Point(683, 14);
+            button3.Name = "button3";
+            button3.Size = new Size(94, 29);
+            button3.TabIndex = 4;
+            button3.Text = "Clear";
+            button3.UseVisualStyleBackColor = true;
+            button3.Click += ClearButton_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(button3);
             Controls.Add(button2);
             Controls.Add(checkBox1);
             Controls.Add(button1);
@@ -97,5 +109,6 @@
         private Button button1;
         private CheckBox checkBox1;
         private Button button2;
+        private Button button3;
     }
 }
